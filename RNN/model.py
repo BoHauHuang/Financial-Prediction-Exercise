@@ -28,6 +28,9 @@ class Models(object):
 		self.y_train = []
 		self.x_test = []
 		self.y_test = []
+        
+		self.train_predict = []
+		self.test_predict = []
 
 		self.RNN_model = None
 
@@ -65,18 +68,21 @@ class Models(object):
 
 	def fit_RNN_model(self):
 		callback = EarlyStopping(monitor="loss", patience=10, verbose=1, mode="auto")
-		self.RNN_model.fit(self.x_train, self.y_train, epochs=1000, batch_size=128, validation_data=(self.x_test, self.y_test), callbacks=[callback])
+		self.RNN_model.fit(self.x_train, self.y_train, epochs=50, batch_size=128, validation_data=(self.x_test, self.y_test), callbacks=[callback])
 
 	def predict_RNN_model(self):
 		
-		train_predict = self.RNN_model.predict(self.x_train)
-		test_predict = self.RNN_model.predict(self.x_test)
+		self.train_predict = self.RNN_model.predict(self.x_train)
+		self.test_predict = self.RNN_model.predict(self.x_test)
 
+		return self.train_predict, self.test_predict
+	
+	def plot_img(self, train_predict, test_predict):
 		train_Score = math.sqrt(mean_squared_error(self.y_train[:,0], train_predict[:,0]))
 		print('Train Score: %.2f Error' %(train_Score))
 		testScore = math.sqrt(mean_squared_error(self.y_test[:,0], test_predict[:,0]))
 		print('Test Score: %.2f Error' % (testScore))
-
+		'''
 		trainPredictPlot = np.empty_like(self.data)
 		trainPredictPlot[:, :] = np.nan
 		trainPredictPlot[self.past_period-self.timedelay:len(train_predict)+self.past_period-self.timedelay] = train_predict
@@ -85,7 +91,10 @@ class Models(object):
 		testPredictPlot[:] = np.nan
 		testPredictPlot[len(train_predict)+self.past_period-2*self.timedelay:len(self.data[self.test_col])-3*self.timedelay] = test_predict
 
-		plt.plot(self.data[self.test_col].values)
+		plt.plot(self.data[self.test_col].values[self.past_period+self.timedelay:])
 		plt.plot(trainPredictPlot,'r')
 		plt.plot(testPredictPlot,'b')
+		'''
+		plt.plot(self.y_test[:-2], 'r')
+		plt.plot(self.test_predict[1:], 'b')
 		plt.show()

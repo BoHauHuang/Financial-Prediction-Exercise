@@ -14,7 +14,17 @@ model = Models(data, train_col, test_col)
 
 model.build_RNN_model()
 model.fit_RNN_model()
-model.predict_RNN_model()
+train_predict, test_predict = model.predict_RNN_model()
+model.plot_img(train_predict, test_predict)
+
+test_x = pd.DataFrame(model.x_test[:,0][:-2])
+test_x.columns = train_col
+test_y = pd.DataFrame(model.y_test[:-2])
+test_y.columns = test_col
+predict = pd.DataFrame(test_predict[1:-1])
+predict.columns = ["Predict"]
+result = pd.concat([test_x, test_y, predict], axis=1)
+result.to_csv("result.csv", encoding='utf-8')
 #output = pd.DataFrame([])
 #output["real"] = y_test
 #output["predict"] = predict
