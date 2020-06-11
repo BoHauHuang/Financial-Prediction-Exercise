@@ -46,10 +46,9 @@ class Models(object):
 	def construct_train(self):
 		x = []
 		y = []
-		for i in range(self.data.shape[0]-self.timedelay-self.past_period):
-			x.append(np.array(self.data.iloc[i:i+self.past_period][self.train_col]))
-			y.append(np.array(self.data.iloc[i+self.past_period:i+self.past_period+self.timedelay][self.test_col]))
-
+		for i in range(self.data.shape[0]-self.timedelay-self.past_period+1):
+			x.append(np.array(self.data.iloc[i : i+self.past_period][self.train_col]))
+			y.append(np.array(self.data.iloc[i+self.past_period : i+self.past_period+self.timedelay][self.test_col]))
 		self.X = np.array(x)
 		self.Y = np.array(y)
 
@@ -61,14 +60,14 @@ class Models(object):
 	def build_RNN_model(self):
 		# Many to one model
 		self.RNN_model = Sequential()
-		self.RNN_model.add(LSTM(10, input_shape=(self.x_train.shape[1], self.x_train.shape[2])))
+		self.RNN_model.add(LSTM(7, input_shape=(self.x_train.shape[1], self.x_train.shape[2])))
 		self.RNN_model.add(Dense(1))
 		self.RNN_model.compile(loss="mean_squared_error", optimizer="adam")
 		self.RNN_model.summary()
 
 	def fit_RNN_model(self):
 		callback = EarlyStopping(monitor="loss", patience=10, verbose=1, mode="auto")
-		self.RNN_model.fit(self.x_train, self.y_train, epochs=50, batch_size=128, validation_data=(self.x_test, self.y_test), callbacks=[callback])
+		self.RNN_model.fit(self.x_train, self.y_train, epochs=100, batch_size=128, validation_data=(self.x_test, self.y_test), callbacks=[callback])
 
 	def predict_RNN_model(self):
 		
@@ -82,19 +81,21 @@ class Models(object):
 		print('Train Score: %.2f Error' %(train_Score))
 		testScore = math.sqrt(mean_squared_error(self.y_test[:,0], test_predict[:,0]))
 		print('Test Score: %.2f Error' % (testScore))
-		'''
+		
 		trainPredictPlot = np.empty_like(self.data)
 		trainPredictPlot[:, :] = np.nan
-		trainPredictPlot[self.past_period-self.timedelay:len(train_predict)+self.past_period-self.timedelay] = train_predict
+		trainPredictPlot[:len(train_predict)] = train_predict
 
 		testPredictPlot = np.empty_like(self.data[self.test_col])
 		testPredictPlot[:] = np.nan
-		testPredictPlot[len(train_predict)+self.past_period-2*self.timedelay:len(self.data[self.test_col])-3*self.timedelay] = test_predict
+		testPredictPlot[len(train_predict)-2*self.timedelay:len(self.data[self.test_col])-2*self.timedelay-self.past_period] = test_predict
 
 		plt.plot(self.data[self.test_col].values[self.past_period+self.timedelay:])
 		plt.plot(trainPredictPlot,'r')
 		plt.plot(testPredictPlot,'b')
+		
 		'''
 		plt.plot(self.y_test[:-2], 'r')
 		plt.plot(self.test_predict[1:], 'b')
+		'''
 		plt.show()
