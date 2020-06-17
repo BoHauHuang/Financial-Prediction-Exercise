@@ -8,7 +8,7 @@ test_col = ["Close"]
 
 data = pd.read_csv("./SP500.csv", encoding='utf-8')
 data = data.dropna(axis=0, how='any')
-data = data[needed][10000:]
+data = data[needed][20000:]
 
 model = Models(data, train_col, test_col)
 
@@ -17,11 +17,11 @@ model.fit_RNN_model()
 train_predict, test_predict = model.predict_RNN_model()
 model.plot_img(train_predict, test_predict)
 
-test_x = pd.DataFrame(model.x_test[:,0][:-2])
+test_x = pd.DataFrame(model.x_test[:,0][:])
 test_x.columns = train_col
-test_y = pd.DataFrame(model.y_test[:-2])
+test_y = pd.DataFrame(model.y_test)
 test_y.columns = test_col
-predict = pd.DataFrame(test_predict[1:])
+predict = pd.DataFrame(test_predict[:])
 predict.columns = ["Predict"]
 result = pd.concat([test_x, test_y, predict], axis=1)
 result.to_csv("result.csv", encoding='utf-8')
